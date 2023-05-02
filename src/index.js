@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { Notify } from 'notiflix';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
 class PixabayApi {
   BASE_URL = 'https://pixabay.com/api/';
   API_KEY = '35978039-e1b43f028e4248e636af167c6';
   
-
   constructor() {
     this.page = 1;
     this.searchQuery = '';
@@ -45,24 +46,25 @@ class PixabayApi {
 const pixabayApi = new PixabayApi();
 pixabayApi.getRequest();
 
-
 const searchBtn = document.querySelector('.search-btn');
 const searchForm = document.querySelector('.search-form');
 const searchInput = document.querySelector('.search-input');
 
-const renderImages = (images) => {
-    const gallery = document.querySelector('.gallery');
-    gallery.innerHTML = '';
+const lightbox = new SimpleLightbox('.gallery a');
 
-    if (images.length === 0) {
-        return;
-    }
-     
-    function cardsMarkup(array) {
-        array.map(el => {
-            return `<a href=${el.largeImageURL}>
+const renderImages = (images) => {
+  const gallery = document.querySelector('.gallery');
+  const loadMoreBtn = document.querySelector('.load-more');
+
+  gallery.innerHTML = '';
+
+  if (images.length === 0) {
+    return;
+  }
+
+  const cardsMarkup = images.map(el => `<a href=${el.largeImageURL}>
     <div class="photo-card">
-      <img src="${el.largeImageURL}" alt="${el.tags}" loading="lazy" width="640" height="360"/>
+      <img src="${el.webformatURL}" alt="${el.tags}" loading="lazy" width="640" height="360"/>
       <div class="info">
         <p class="info-item"><b>Likes: </b>${el.likes}</p>
         <p class="info-item"><b>Views: </b>${el.views}</p>
@@ -70,23 +72,40 @@ const renderImages = (images) => {
         <p class="info-item"><b>Downloads: </b>${el.downloads}</p>
       </div>
     </div>
-  </a>`
-        });
+  </a>`).join('');
 
-        
-        return cardsMarkup.join('');
+  gallery.insertAdjacentHTML('beforeend', cardsMarkup);
+
+  if (pixabayApi.page < pixabayApi.totalPage) {
+    loadMoreBtn.style.display = 'block';
+  } else {
+    loadMoreBtn.style.display = 'none';
+    Notify.info(`We're sorry, but you've reached the end of search results.`);
+  }
+
+  loadMoreBtn.addEventListener('click', async () => {
+    pixabayApi.page++;
+
+    try {
+      const images = await pixabayApi.getRequest();
+      renderImages(images);
+      lightbox.refresh();
+    } catch (error) {
+      Notify.failure('Oops, something went wrong. Please try again later.');
     }
+  });
+};
 
+searchForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  pixabayApi.page = 1;
 
-    searchForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
+    try {
+      pixabayApi.searchQuery = searchInput.value;
+      const images = await pixabayApi.getRequest();
+      renderImages(images);
+    } catch (error) {
+      Notify.failure('Oops, something went wrong. Please try again later.');
+    }
+  });
 
-        try {
-            pixabayApi.searchQuery = searchInput.value;
-            const images = await pixabayApi.getRequest();
-            renderImages(images);
-        } catch (error) {
-            Notify.failure('Oops, something went wrong. Please try again later.');
-        }
-    });
-}
