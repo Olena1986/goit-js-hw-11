@@ -44,25 +44,82 @@ class PixabayApi {
 }
 
 const pixabayApi = new PixabayApi();
-pixabayApi.getRequest();
 
+
+
+
+const gallery = document.querySelector('.gallery');
 const searchBtn = document.querySelector('.search-btn');
 const searchForm = document.querySelector('.search-form');
 const searchInput = document.querySelector('.search-input');
-
+const loadMoreBtn = document.querySelector('.load-more');
 const lightbox = new SimpleLightbox('.gallery a');
 
-const renderImages = (images) => {
-  const gallery = document.querySelector('.gallery');
-  const loadMoreBtn = document.querySelector('.load-more');
+async function onFormSubmit(event) {
+  event.preventDefault();
+  clearMarkup();
+  pixabayApi.searchQuery = event.target.elements.searchQuery.value;
+  const data = await pixabayApi.getRequest();
+  const fullString = renderImages(data);
+  insertMarkup(fullString);
+  if (pixabayApi.page < pixabayApi.totalPage) {
+    pixabayApi.page += 1;  
+    showLoadMore();    
+    lightbox.refresh();
+  }
+}
 
-  gallery.innerHTML = '';
+
+function showLoadMore() {
+  loadMoreBtn.classList.remove('is-hidden');
+  loadMoreBtn.addEventListener('click', onBtnLoadClick);
+}
+
+function hideLoadMoreButton() {
+  loadMoreBtn.classList.add('is-hidden');
+  loadMoreBtn.removeEventListener('click', onBtnLoadClick);
+}
+
+async function onBtnLoadClick() {
+  hideLoadMoreButton();
+  const data = await pixabayApi.getRequest();
+  const fullString = renderImages(data);
+  insertMarkup(fullString);
+  if (pixabayApi.page === pixabayApi.totalPage) {
+    Notify.info("We're sorry, but you've reached the end of search results.");
+  }
+  if (pixabayApi.page < pixabayApi.totalPage) {
+    pixabayApi.page += 1;
+    showLoadMore();
+    lightbox.refresh();
+  }
+  const { height: cardHeight } = document
+    .querySelector(".gallery")
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: "smooth",
+  });
+}
+
+function insertMarkup(fullMarkup) { 
+        gallery.insertAdjacentHTML('beforeend', fullMarkup);
+}
+function clearMarkup() {
+    PixabayApi.page = 1;
+    gallery.innerHTML = '';
+}
+
+ 
+function renderImages(images) {
+    gallery.innerHTML = '';
+    hideLoadMoreButton();
 
   if (images.length === 0) {
-    return;
-  }
-
-  const cardsMarkup = images.map(el => `<a href=${el.largeImageURL}>
+  return;
+}
+  const  cardsMarkup = images.map(el => `<a href=${el.largeImageURL}>
     <div class="photo-card">
       <img src="${el.webformatURL}" alt="${el.tags}" loading="lazy" width="640" height="360"/>
       <div class="info">
@@ -76,12 +133,6 @@ const renderImages = (images) => {
 
   gallery.insertAdjacentHTML('beforeend', cardsMarkup);
 
-  if (pixabayApi.page < pixabayApi.totalPage) {
-    loadMoreBtn.style.display = 'block';
-  } else {
-    loadMoreBtn.style.display = 'none';
-    Notify.info(`We're sorry, but you've reached the end of search results.`);
-  }
 
   loadMoreBtn.addEventListener('click', async () => {
     pixabayApi.page++;
@@ -91,7 +142,6 @@ const renderImages = (images) => {
       renderImages(images);
       lightbox.refresh();
     } catch (error) {
-      Notify.failure('Oops, something went wrong. Please try again later.');
     }
   });
 };
@@ -100,12 +150,12 @@ searchForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   pixabayApi.page = 1;
 
-    try {
-      pixabayApi.searchQuery = searchInput.value;
-      const images = await pixabayApi.getRequest();
-      renderImages(images);
-    } catch (error) {
-      Notify.failure('Oops, something went wrong. Please try again later.');
-    }
-  });
+  try {
+    pixabayApi.searchQuery = searchInput.value;
+    const images = await pixabayApi.getRequest();
+    renderImages(images);
+  } catch (error) {
+    
+  }
+});
 
