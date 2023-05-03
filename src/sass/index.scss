@@ -1,6 +1,10 @@
 @import './common';
 @import './example';
 
+
+.is-hidden {
+    display: none;
+}
 .search-form-container {
     display: flex;
     justify-content: center;

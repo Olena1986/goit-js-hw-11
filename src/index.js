@@ -45,9 +45,6 @@ class PixabayApi {
 
 const pixabayApi = new PixabayApi();
 
-
-
-
 const gallery = document.querySelector('.gallery');
 const searchBtn = document.querySelector('.search-btn');
 const searchForm = document.querySelector('.search-form');
@@ -55,13 +52,14 @@ const searchInput = document.querySelector('.search-input');
 const loadMoreBtn = document.querySelector('.load-more');
 const lightbox = new SimpleLightbox('.gallery a');
 
+
 async function onFormSubmit(event) {
   event.preventDefault();
   clearMarkup();
   pixabayApi.searchQuery = event.target.elements.searchQuery.value;
   const data = await pixabayApi.getRequest();
   const fullString = renderImages(data);
-  insertMarkup(fullString);
+    insertMarkup(fullString);
   if (pixabayApi.page < pixabayApi.totalPage) {
     pixabayApi.page += 1;  
     showLoadMore();    
@@ -72,19 +70,21 @@ async function onFormSubmit(event) {
 
 function showLoadMore() {
   loadMoreBtn.classList.remove('is-hidden');
-  loadMoreBtn.addEventListener('click', onBtnLoadClick);
+    loadMoreBtn.addEventListener('click', onBtnLoadClick); 
+   
 }
 
 function hideLoadMoreButton() {
   loadMoreBtn.classList.add('is-hidden');
-  loadMoreBtn.removeEventListener('click', onBtnLoadClick);
+    loadMoreBtn.removeEventListener('click', onBtnLoadClick);
 }
 
 async function onBtnLoadClick() {
   hideLoadMoreButton();
   const data = await pixabayApi.getRequest();
   const fullString = renderImages(data);
-  insertMarkup(fullString);
+    insertMarkup(fullString);
+    
   if (pixabayApi.page === pixabayApi.totalPage) {
     Notify.info("We're sorry, but you've reached the end of search results.");
   }
@@ -116,24 +116,25 @@ function renderImages(images) {
     gallery.innerHTML = '';
     hideLoadMoreButton();
 
-  if (images.length === 0) {
-  return;
-}
-  const  cardsMarkup = images.map(el => `<a href=${el.largeImageURL}>
-    <div class="photo-card">
+    if (images.length === 0) {
+        return;
+    }
+    const cardsMarkup = images.map(el => `<div class="photo-card">
+   <a href=${el.largeImageURL}>
       <img src="${el.webformatURL}" alt="${el.tags}" loading="lazy" width="640" height="360"/>
+   </a>
       <div class="info">
         <p class="info-item"><b>Likes: </b>${el.likes}</p>
         <p class="info-item"><b>Views: </b>${el.views}</p>
         <p class="info-item"><b>Comments: </b>${el.comments}</p>
         <p class="info-item"><b>Downloads: </b>${el.downloads}</p>
       </div>
-    </div>
-  </a>`).join('');
+    
+  </div>`).join('');
 
-  gallery.insertAdjacentHTML('beforeend', cardsMarkup);
-
-
+    gallery.insertAdjacentHTML('beforeend', cardsMarkup);
+    lightbox.refresh();
+}
   loadMoreBtn.addEventListener('click', async () => {
     pixabayApi.page++;
 
@@ -144,7 +145,7 @@ function renderImages(images) {
     } catch (error) {
     }
   });
-};
+
 
 searchForm.addEventListener('submit', async (event) => {
   event.preventDefault();
