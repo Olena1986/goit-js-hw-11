@@ -9,6 +9,7 @@
     display: flex;
     justify-content: center;
     margin-bottom: 30px;
+    background-color: rgb(71, 69, 66);
 }
 
 .search-form {
@@ -21,8 +22,8 @@
     border-radius: 5px 0 0 5px;
     outline: none;
     width: 400px;
-    border-color: rgb(172, 166, 166);
-    
+    border-color: rgb(172, 166, 166); 
+    background-color: #ccc;
 }
 
 .search-form button {
@@ -30,7 +31,7 @@
     padding: 10px;
     border: none;
     border-radius: 0 5px 5px 0;
-    background-color: #007bff;
+    background-color: #6589b0;
     color: #fff;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
@@ -95,7 +96,7 @@
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    background-color: #007bff;
+    background-color: #6589b0;
     color: #fff;
     cursor: pointer;
     transition: all 0.2s ease-in-out;

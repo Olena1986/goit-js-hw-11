@@ -52,18 +52,19 @@ const searchInput = document.querySelector('.search-input');
 const loadMoreBtn = document.querySelector('.load-more');
 const lightbox = new SimpleLightbox('.gallery a');
 
+searchForm.addEventListener("submit", onFormSubmit);
 
 async function onFormSubmit(event) {
   event.preventDefault();
   clearMarkup();
-  pixabayApi.searchQuery = event.target.elements.searchQuery.value;
+ pixabayApi.searchQuery = searchInput.value;
   const data = await pixabayApi.getRequest();
   const fullString = renderImages(data);
     insertMarkup(fullString);
   if (pixabayApi.page < pixabayApi.totalPage) {
-    pixabayApi.page += 1;  
-    showLoadMore();    
-    lightbox.refresh();
+    pixabayApi.page += 1;      
+      lightbox.refresh();
+      showLoadMore();
   }
 }
 
@@ -83,6 +84,8 @@ async function onBtnLoadClick() {
   const data = await pixabayApi.getRequest();
   const fullString = renderImages(data);
     insertMarkup(fullString);
+
+    lightbox.refresh();
     
   if (pixabayApi.page === pixabayApi.totalPage) {
     Notify.info("We're sorry, but you've reached the end of search results.");
@@ -90,9 +93,8 @@ async function onBtnLoadClick() {
   if (pixabayApi.page < pixabayApi.totalPage) {
     pixabayApi.page += 1;
     showLoadMore();
-    lightbox.refresh();
     }
-    showLoadMore();
+
 
   const { height: cardHeight } = document
     .querySelector(".gallery")
@@ -114,13 +116,11 @@ function clearMarkup() {
 
  
 function renderImages(images) {
-    gallery.innerHTML = '';
-    hideLoadMoreButton();
-
+    const cardsMarkup = "";
     if (images.length === 0) {
-        return;
+        return cardsMarkup;
     }
-    const cardsMarkup = images.map(el => `<div class="photo-card">
+    const cardMarkup = images.map(el => `<div class="photo-card">
    <a href=${el.largeImageURL}>
       <img src="${el.webformatURL}" alt="${el.tags}" loading="lazy" width="640" height="360"/>
    </a>
@@ -132,32 +132,7 @@ function renderImages(images) {
       </div>
     
   </div>`).join('');
-
-    gallery.insertAdjacentHTML('beforeend', cardsMarkup);
-    lightbox.refresh();
+    return cardMarkup;
 }
-  loadMoreBtn.addEventListener('click', async () => {
-    pixabayApi.page++;
 
-    try {
-      const images = await pixabayApi.getRequest();
-      renderImages(images);
-      lightbox.refresh();
-    } catch (error) {
-    }
-  });
-
-
-searchForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  pixabayApi.page = 1;
-
-  try {
-    pixabayApi.searchQuery = searchInput.value;
-    const images = await pixabayApi.getRequest();
-    renderImages(images);
-  } catch (error) {
-    
-  }
-});
 
