@@ -71,7 +71,6 @@ async function onFormSubmit(event) {
 function showLoadMore() {
   loadMoreBtn.classList.remove('is-hidden');
     loadMoreBtn.addEventListener('click', onBtnLoadClick); 
-   
 }
 
 function hideLoadMoreButton() {
@@ -92,7 +91,9 @@ async function onBtnLoadClick() {
     pixabayApi.page += 1;
     showLoadMore();
     lightbox.refresh();
-  }
+    }
+    showLoadMore();
+
   const { height: cardHeight } = document
     .querySelector(".gallery")
     .firstElementChild.getBoundingClientRect();
