@@ -12,6 +12,7 @@ class PixabayApi {
     this.searchQuery = '';
     this.perPage = 40;
     this.totalPage = 1;
+    this.searched = 0;
   }
 
   async getRequest() {
@@ -27,13 +28,7 @@ class PixabayApi {
 
     try {
       const response = await axios.get(this.BASE_URL, { params: parameters });
-
-      if (response.data.total === 0) {
-        Notify.failure('Sorry, there are no images matching your search query. Please try again.');
-      } else {
-        Notify.info(`Hooray! We found ${response.data.total} images.`);
-      }
-
+      this.searched = response.data.total;
       this.totalPage = Math.ceil(response.data.total / this.perPage);
       return response.data.hits;
     } catch (error) {
@@ -57,6 +52,8 @@ searchForm.addEventListener("submit", onFormSubmit);
 async function onFormSubmit(event) {
   event.preventDefault();
   clearMarkup();
+  hideLoadMoreButton();
+  pixabayApi.page = 1;
  pixabayApi.searchQuery = searchInput.value;
   const data = await pixabayApi.getRequest();
   const fullString = renderImages(data);
@@ -66,6 +63,11 @@ async function onFormSubmit(event) {
       lightbox.refresh();
       showLoadMore();
   }
+  if (pixabayApi.searched === 0) {
+  Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+} else {
+  Notify.info(`Hooray! We found ${pixabayApi.searched} images.`);
+}
 }
 
 
@@ -94,16 +96,14 @@ async function onBtnLoadClick() {
     pixabayApi.page += 1;
     showLoadMore();
     }
-
-
-  const { height: cardHeight } = document
-    .querySelector(".gallery")
-    .firstElementChild.getBoundingClientRect();
-
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: "smooth",
-  });
+const firstCard = document.querySelector(".gallery").firstElementChild;
+  if (firstCard !== null) {
+    const { height: cardHeight } = firstCard.getBoundingClientRect();
+    window.scrollBy({
+      top: cardHeight * 2,
+      behavior: "smooth",
+    });
+  }
 }
 
 function insertMarkup(fullMarkup) { 
